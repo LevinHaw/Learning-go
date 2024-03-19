@@ -35,9 +35,7 @@ func (c *EmployeeController) Routes(r *gin.RouterGroup) {
 // @Router       /api/employees [get]
 func (c *EmployeeController) GetEmployeeList(ctx *gin.Context) {
 	sqlStatement := `SELECT * FROM employee`
-
 	rows, err := c.DB.Query(sqlStatement)
-
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -46,19 +44,17 @@ func (c *EmployeeController) GetEmployeeList(ctx *gin.Context) {
 	var employees []models.Employee
 
 	for rows.Next() {
+
 		var employee models.Employee
 
 		err = rows.Scan(&employee.ID, &employee.Name, &employee.Email, &employee.Age, &employee.Division)
 
 		if err != nil {
 			ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-
 			return
 		}
-
 		employees = append(employees, employee)
 	}
-
 	ctx.JSON(http.StatusOK, employees)
 }
 
@@ -85,11 +81,9 @@ func (c *EmployeeController) GetEmployee(ctx *gin.Context) {
 			ctx.JSON(http.StatusNotFound, gin.H{"error": fmt.Sprintf("Employee with id %s not found", id)})
 			return
 		}
-
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-
 	ctx.JSON(http.StatusOK, employee)
 }
 
@@ -103,6 +97,7 @@ func (c *EmployeeController) GetEmployee(ctx *gin.Context) {
 // @Success      200  {object}  Employee
 // @Router       /api/employees [post]
 func (c *EmployeeController) CreateEmployee(ctx *gin.Context) {
+
 	var request models.CreateEmployeeRequest
 
 	var employee models.Employee
@@ -113,19 +108,15 @@ func (c *EmployeeController) CreateEmployee(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-
 	sqlStatement := `INSERT INTO employee (full_name, email, age, division) VALUES ($1, $2, $3, $4) returning *`
 	//
 	err = c.DB.QueryRow(sqlStatement, request.Name, request.Email, request.Age, request.Division).Scan(&employee.ID, &employee.Name, &employee.Email, &employee.Age, &employee.Division)
-
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-
 	ctx.JSON(http.StatusCreated, employee)
 }
-
 func (c *EmployeeController) UpdateEmployee(ctx *gin.Context) {
 	id := ctx.Param("id")
 
@@ -148,45 +139,24 @@ func (c *EmployeeController) UpdateEmployee(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-
 	ctx.JSON(http.StatusOK, employee)
-
 }
-
 func (c *EmployeeController) DeleteEmployee(ctx *gin.Context) {
 	id := ctx.Param("id")
-
 	sqlStatement := `DELETE FROM employee WHERE employee_id = $1`
-
 	result, err := c.DB.Exec(sqlStatement, id)
-
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-
 	count, err := result.RowsAffected()
-
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-
 	if count == 0 {
 		ctx.JSON(http.StatusNotFound, gin.H{"error": fmt.Sprintf("Employee with id %s not found", id)})
 		return
 	}
-
-	// for i, emp := range employees {
-	// 	if emp.ID == id {
-	// 		// employees = append(employees[:i], employees[i+1:]...)
-
-	// 		employees = slices.Delete(employees, i, 1)
-
-	// 		ctx.JSON(http.StatusOK, gin.H{"message": "Employee deleted"})
-	// 		return
-	// 	}
-	// }
-
 	ctx.JSON(http.StatusOK, gin.H{"message": fmt.Sprintf("Employee with id %s has been deleted", id)})
 }

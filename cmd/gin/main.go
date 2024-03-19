@@ -6,13 +6,15 @@ import (
 )
 
 func main() {
-	port := ":6000"
+	port := ":7000"
 
 	db := database.SQLInit()
 
+	gorm := database.GormInit(db)
+
 	defer db.Close()
 
-	start := routers.StartServer(db)
+	start := routers.StartServer(db, gorm)
 	start.Run(port)
 
 }
